@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบวิเคราะห์และตรวจสอบยอดอนุมัติ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0/dist/chartjs-plugin-annotation.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700&display=swap');
+        body { font-family: 'Prompt', sans-serif; }
+        .scrollable-list { max-height: 400px; overflow-y: auto; }
+        .scrollable-list::-webkit-scrollbar { width: 6px; }
+        .scrollable-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .tab-content { display: none; }
+        .tab-active { display: block; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen p-4 md:p-10">
+    <div class="max-w-6xl mx-auto">
+        <header class="mb-8">
+            <h1 class="text-4xl font-bold text-slate-900 tracking-tight">Dashboard วิเคราะห์ข้อมูล</h1>
+            <div class="flex gap-4 mt-6 border-b border-slate-200">
+                <button id="btnInput" onclick="switchTab('inputTab', 'btnInput')" class="px-6 py-2 font-bold border-b-2 border-slate-900 text-slate-900">หน้ากรอกข้อมูล</button>
+                <button id="btnReport" onclick="switchTab('reportTab', 'btnReport')" class="px-6 py-2 font-bold text-slate-500 hover:text-slate-900">รายงานและสรุปผล (Top 10)</button>
+                <button id="btnGraph" onclick="switchTab('graphTab', 'btnGraph')" class="px-6 py-2 font-bold text-slate-500 hover:text-slate-900">สรุปผลกราฟรายเดือน</button>
+            </div>
+        </header>
+
+        <!-- หน้ากรอกข้อมูล -->
+        <div id="inputTab" class="tab-content tab-active">
+    
+    <div class="mb-6 bg-slate-100 p-6 rounded-2xl border border-slate-200">
+        <h3 class="text-lg font-bold mb-4 text-slate-800">อัปโหลดข้อมูลจาก Excel</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-white p-4 rounded-xl border border-slate-200">
+                <button onclick="downloadWrongTemplate()" class="w-full mb-2 bg-rose-600 hover:bg-rose-700 text-white py-2 rounded-lg font-bold text-sm">โหลด Template ยอดอนุมัติผิด</button>
+                <input type="file" accept=".xlsx" onchange="handleWrongFileUpload(event)" class="w-full text-sm">
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200">
+                <button onclick="downloadCorrectTemplate()" class="w-full mb-2 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-bold text-sm">โหลด Template ยอดอนุมัติ/วันทำงาน</button>
+                <input type="file" accept=".xlsx" onchange="handleCorrectFileUpload(event)" class="w-full text-sm">
+            </div>
+        </div>
+    </div>
+            <div class="mb-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap gap-4 items-end">
+                <div class="flex-1 min-w-[200px]">
+                    <label class="block text-lg font-bold mb-3 text-slate-700">เลือกเดือนที่ต้องการ:</label>
+                    <select id="monthSelect" class="w-full p-3 border-2 border-slate-200 rounded-xl font-bold outline-none focus:border-slate-900">
+                        <option value="">-- เลือกเดือน --</option>
+                <option value="1">มกราคม</option>
+                <option value="2">กุมภาพันธ์</option>
+                <option value="3">มีนาคม</option>
+                <option value="4">เมษายน</option>
+                <option value="5">พฤษภาคม</option>
+                <option value="6">มิถุนายน</option>
+                <option value="7">กรกฎาคม</option>
+                <option value="8">สิงหาคม</option>
+                <option value="9">กันยายน</option>
+                <option value="10">ตุลาคม</option>
+                <option value="11">พฤศจิกายน</option>
+                <option value="12">ธันวาคม</option>
+                    </select>
+                </div>
+                <button onclick="loadDataToInput()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg transition">โหลดข้อมูล</button>
+                <button onclick="clearInputs()" class="bg-amber-500 hover:bg-amber-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg transition">ล้างข้อมูล</button>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                    <label class="block text-base font-bold text-rose-600 mb-3">ยอดอนุมัติผิด</label>
+                    <textarea id="wrongInput" rows="6" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl" placeholder="สมชาย 1000"></textarea>
+                </div>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                    <label class="block text-base font-bold text-emerald-600 mb-3">ยอดอนุมัติและวันทำงาน</label>
+                    <textarea id="correctInput" rows="6" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl" placeholder="สมหญิง 50000 20"></textarea>
+                </div>
+            </div>
+            <button onclick="saveAndAnalyze()" class="w-full bg-slate-900 hover:bg-slate-800 text-white py-5 rounded-2xl font-bold text-xl shadow-xl">บันทึกและประมวลผล</button>
+            
+            <div id="results" class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6 hidden">
+                <section class="bg-white p-7 rounded-3xl border shadow-sm"><h2 class="text-xl font-bold text-rose-700 mb-4">❌ ยอดที่อนุมัติผิด</h2><div id="wrongList" class="space-y-2 scrollable-list pr-2"></div></section>
+                <section class="bg-white p-7 rounded-3xl border shadow-sm"><h2 class="text-xl font-bold text-emerald-700 mb-4">✅ จำนวนยอดที่อนุมติ</h2><div id="correctAmountList" class="space-y-2 scrollable-list pr-2"></div></section>
+                <section class="bg-white p-7 rounded-3xl border shadow-sm"><h2 class="text-xl font-bold text-blue-700 mb-4">📅 จำนวนวันทำงาน</h2><div id="workDaysList" class="space-y-2 scrollable-list pr-2"></div></section>
+                <section class="bg-white p-7 rounded-3xl border shadow-sm"><h2 class="text-xl font-bold text-indigo-700 mb-4">📈 ยอดเฉลี่ยต่อวัน</h2><div id="avgPerDayList" class="space-y-2 scrollable-list pr-2"></div></section>
+            </div>
+        </div>
+
+        <!-- หน้าสรุปผล -->
+        <div id="reportTab" class="tab-content">
+            <div class="mb-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <label class="block text-lg font-bold mb-3">ดูรายงานของเดือน:</label>
+                <select id="reportMonth" onchange="loadReport()" class="w-full md:w-64 p-3 border-2 border-slate-200 rounded-xl font-bold outline-none focus:border-slate-900">
+                    <option value="">-- เลือกเดือน --</option>
+                <option value="1">มกราคม</option>
+                <option value="2">กุมภาพันธ์</option>
+                <option value="3">มีนาคม</option>
+                <option value="4">เมษายน</option>
+                <option value="5">พฤษภาคม</option>
+                <option value="6">มิถุนายน</option>
+                <option value="7">กรกฎาคม</option>
+                <option value="8">สิงหาคม</option>
+                <option value="9">กันยายน</option>
+                <option value="10">ตุลาคม</option>
+                <option value="11">พฤศจิกายน</option>
+                <option value="12">ธันวาคม</option>
+                </select>
+            </div>
+            <div id="reportContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <section class="bg-white p-7 rounded-3xl border shadow-sm"><h2 class="text-xl font-bold text-rose-700 mb-4">🏆 Top 10 ยอดที่อนุมัติผิด</h2><div id="topWrong" class="space-y-2"></div></section>
+                <section class="bg-white p-7 rounded-3xl border shadow-sm"><h2 class="text-xl font-bold text-emerald-700 mb-4">🏆 Top 10 จำนวนยอดที่อนุมติ</h2><div id="topCorrect" class="space-y-2"></div></section>
+                <section class="bg-white p-7 rounded-3xl border shadow-sm"><h2 class="text-xl font-bold text-blue-700 mb-4">🏆 Top 10 จำนวนวันทำงาน</h2><div id="topDays" class="space-y-2"></div></section>
+                <section class="bg-white p-7 rounded-3xl border shadow-sm"><h2 class="text-xl font-bold text-indigo-700 mb-4">🏆 Top 10 ยอดเฉลี่ยต่อวัน</h2><div id="topAvg" class="space-y-2"></div></section>
+            </div>
+        </div>
+
+        <!-- หน้าสรุปผลกราฟรายเดือน -->
+        <div id="graphTab" class="tab-content">
+            <div class="mb-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap gap-4 items-end">
+                <div class="flex-1 min-w-[200px]">
+                    <label class="block text-lg font-bold mb-3 text-slate-700">เลือกเดือน (กราฟ):</label>
+                    <select id="graphMonthSelect" onchange="loadGraphData()" class="w-full p-3 border-2 border-slate-200 rounded-xl font-bold outline-none focus:border-slate-900">
+                        <option value="">-- เลือกเดือน --</option>
+                <option value="1">มกราคม</option>
+                <option value="2">กุมภาพันธ์</option>
+                <option value="3">มีนาคม</option>
+                <option value="4">เมษายน</option>
+                <option value="5">พฤษภาคม</option>
+                <option value="6">มิถุนายน</option>
+                <option value="7">กรกฎาคม</option>
+                <option value="8">สิงหาคม</option>
+                <option value="9">กันยายน</option>
+                <option value="10">ตุลาคม</option>
+                <option value="11">พฤศจิกายน</option>
+                <option value="12">ธันวาคม</option>
+                    </select>
+                </div>
+                <button onclick="downloadTemplates()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg transition">โหลดไฟล์ต้นแบบ</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                    <label class="block text-base font-bold text-blue-600 mb-3">1. อัปโหลดไฟล์ "ยอดอนุมัติรายวัน"</label>
+                    <input type="file" id="approvalFile" accept=".xlsx" class="w-full p-2 border border-slate-200 rounded-xl bg-slate-50">
+                </div>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                    <label class="block text-base font-bold text-rose-600 mb-3">2. อัปโหลดไฟล์ "ยอดอนุมัติผิดรายวัน"</label>
+                    <input type="file" id="errorFile" accept=".xlsx" class="w-full p-2 border border-slate-200 rounded-xl bg-slate-50">
+                </div>
+            </div>
+            <button onclick="processExcelFiles()" class="w-full bg-slate-900 hover:bg-slate-800 text-white py-5 rounded-2xl font-bold text-xl shadow-xl mb-8">ประมวลผลและสร้างกราฟ</button>
+
+	<div id="summaryGraphContainer" class="mb-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
+    <h3 class="text-xl font-bold mb-6 text-slate-800">📊 สรุปยอดรวมรายเดือน (3 เดือนย้อนหลัง)</h3>
+    <div class="flex">
+        <div class="w-3/4 pr-4">
+            <canvas id="summaryBarChart" style="max-height: 300px;"></canvas>
+        </div>
+        <div class="w-1/4 border-l border-slate-100 pl-4" id="summaryStats">
+            </div>
+    </div>
+</div>
+            <div id="graphResults" class="grid grid-cols-1 gap-8 hidden">
+                <section class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                    <h2 class="text-xl font-bold text-rose-700 mb-4">📉 กราฟ % ยอดอนุมัติผิด เป้าหมาย 0.05%</h2>
+                    <canvas id="errorChart" height="100"></canvas>
+                </section>
+                <section class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                    <h2 class="text-xl font-bold text-emerald-700 mb-4">📈 กราฟ % ยอดอนุมัติถูก เป้าหมาย 99.95%</h2>
+                    <canvas id="successChart" height="100"></canvas>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let db = JSON.parse(localStorage.getItem('approvalData') || '{}');
+
+        function switchTab(tabId, btnActive) {
+    // 1. เปลี่ยน Class ของ Tab
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('tab-active'));
+    document.getElementById(tabId).classList.add('tab-active');
+    
+    // 2. ถ้าหน้าจอที่เปลี่ยนมาคือหน้ากราฟ ให้สั่ง Resize กราฟใหม่ทันที
+    if (tabId === 'graphTab') {
+        setTimeout(() => {
+            if (typeof errChartInstance !== 'undefined' && errChartInstance) errChartInstance.resize();
+            if (typeof succChartInstance !== 'undefined' && succChartInstance) succChartInstance.resize();
+        }, 100); // รอ 100ms ให้ Browser แสดงผล Tab เสร็จก่อน
+    }
+
+    // 3. จัดการเรื่องสีปุ่มกด (เหมือนเดิม)
+    ['btnInput', 'btnReport', 'btnGraph'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) {
+            if (id === btnActive) {
+                btn.classList.add('border-b-2', 'border-slate-900', 'text-slate-900');
+                btn.classList.remove('text-slate-500');
+            } else {
+                btn.classList.remove('border-b-2', 'border-slate-900', 'text-slate-900');
+                btn.classList.add('text-slate-500');
+            }
+        }
+    });
+}
+
+        function parseNum(val) { return parseFloat(val.replace(/,/g, '').replace(/"/g, '')) || 0; }
+        function cleanText(text) { return text.replace(/"/g, ''); }
+
+        function clearInputs() {
+            document.getElementById('wrongInput').value = '';
+            document.getElementById('correctInput').value = '';
+            document.getElementById('results').classList.add('hidden');
+        }
+
+        function loadDataToInput() {
+            const month = document.getElementById('monthSelect').value;
+            if (!month) return alert('กรุณาเลือกเดือนก่อนโหลดข้อมูล');
+            if (db[month] && (db[month].wrong || db[month].correct)) {
+                document.getElementById('wrongInput').value = db[month].wrong || '';
+                document.getElementById('correctInput').value = db[month].correct || '';
+                processData(month, true);
+                alert('โหลดข้อมูลเดือนที่เลือกเรียบร้อยแล้ว');
+            } else {
+                clearInputs();
+                alert('ไม่พบข้อมูลสำหรับเดือนนี้');
+            }
+        }
+
+        function saveAndAnalyze() {
+    const month = document.getElementById('monthSelect').value;
+    const wrongText = document.getElementById('wrongInput').value.trim();
+    const correctText = document.getElementById('correctInput').value.trim();
+    
+    if (!month) return alert('กรุณาเลือกเดือนก่อนบันทึก');
+    if (wrongText === "" && correctText === "") return alert('ไม่สามารถบันทึกข้อมูลว่างเปล่าได้');
+    
+    // --- เริ่มต้นส่วนคำนวณยอดรวม ---
+    let totalErr = 0;
+    wrongText.split('\n').forEach(line => {
+        const parts = line.split(' ');
+        const val = parseFloat(parts[parts.length - 1]);
+        if (!isNaN(val)) totalErr += val;
+    });
+
+    let totalApp = 0;
+    correctText.split('\n').forEach(line => {
+        const parts = line.split(' ');
+        // สมมติ format คือ "ชื่อ ยอด วันทำงาน" (ยอดอยู่ที่ index 1)
+        const val = parseFloat(parts[1]);
+        if (!isNaN(val)) totalApp += val;
+    });
+    // --- สิ้นสุดส่วนคำนวณยอดรวม ---
+
+    if (!db[month]) db[month] = {};
+    db[month].wrong = wrongText;
+    db[month].correct = correctText;
+    
+    // บันทึกยอดรวมลงไปใน db ของเดือนนั้นๆ
+    db[month].monthlyTotals = { totalApp, totalErr }; 
+
+    localStorage.setItem('approvalData', JSON.stringify(db));
+    processData(month, true);
+    
+    // ถ้าหน้าจอกำลังแสดงกราฟอยู่ ให้รีเฟรชกราฟด้วย
+    if (typeof renderSummaryBarChart === 'function') renderSummaryBarChart();
+    
+    alert('บันทึกข้อมูลสำเร็จ!');
+}
+
+        function processData(month, showResults) {
+            const data = db[month];
+            if (!data) {
+                if (showResults) document.getElementById('results').classList.add('hidden');
+                return null;
+            }
+
+            let wrongItems = (data.wrong || '').split('\n').filter(l => l.trim()).map(l => {
+                const p = l.trim().split(/\s+/);
+                return { name: cleanText(p.slice(0, -1).join(' ')), amount: parseNum(p[p.length-1]) };
+            }).sort((a,b) => b.amount - a.amount);
+
+            let correctItems = (data.correct || '').split('\n').filter(l => l.trim()).map(l => {
+                const p = l.trim().split(/\s+/);
+                if (p.length < 3) return null;
+                const d = parseNum(p[p.length-1]);
+                const a = parseNum(p[p.length-2]);
+                return { name: cleanText(p.slice(0, -2).join(' ')), amount: a, days: d, avg: d > 0 ? a/d : 0 };
+            }).filter(i => i);
+
+            if(showResults) {
+                document.getElementById('results').classList.remove('hidden');
+                renderSimpleList('wrongList', wrongItems, i => `${i.name} <b class="float-right">${i.amount.toLocaleString()}</b>`);
+                renderSimpleList('correctAmountList', [...correctItems].sort((a,b) => b.amount - a.amount), i => `${i.name} <b class="float-right">${i.amount.toLocaleString()}</b>`);
+                renderSimpleList('workDaysList', [...correctItems].sort((a,b) => b.days - a.days), i => `${i.name} <b class="float-right">${i.days} วัน</b>`);
+                renderSimpleList('avgPerDayList', [...correctItems].sort((a,b) => b.avg - a.avg), i => `${i.name} <b class="float-right">${Math.round(i.avg).toLocaleString()}</b>`);
+            }
+            return { wrongItems, correctItems };
+        }
+
+        function renderSimpleList(targetId, dataList, formatFn, limit = null) {
+            const container = document.getElementById(targetId);
+            const listToRender = limit ? dataList.slice(0, limit) : dataList;
+            container.innerHTML = listToRender.length > 0 ? listToRender.map((i, idx) => `<div class="p-3 bg-slate-50 border rounded-xl font-medium">${idx+1}. ${formatFn(i)}</div>`).join('') : '<div class="text-slate-400">ไม่พบข้อมูล</div>';
+        }
+
+        function renderTrendList(targetId, dataList, formatFn, limit = null, prevMonthData = null, key = 'name', isWrongTop = false) {
+            const container = document.getElementById(targetId);
+            const listToRender = limit ? dataList.slice(0, limit) : dataList;
+            
+            container.innerHTML = listToRender.length > 0 ? listToRender.map((i, idx) => {
+                let trend = '';
+                if (prevMonthData) {
+                    const prevIdx = prevMonthData.findIndex(item => item[key] === i[key]);
+                    if (prevIdx !== -1) {
+                        const currentRank = idx + 1;
+                        const prevRank = prevIdx + 1;
+                        
+                        if (isWrongTop) {
+                            if (currentRank < prevRank) trend = `<span class="text-red-600 ml-2 font-bold">↑ ${prevRank}</span>`; 
+                            else if (currentRank > prevRank) trend = `<span class="text-green-600 ml-2 font-bold">↓ ${prevRank}</span>`; 
+                        } else {
+                            if (currentRank < prevRank) trend = `<span class="text-green-600 ml-2 font-bold">↑ ${prevRank}</span>`;
+                            else if (currentRank > prevRank) trend = `<span class="text-red-600 ml-2 font-bold">↓ ${prevRank}</span>`;
+                        }
+                    }
+                }
+                return `<div class="p-3 bg-slate-50 border rounded-xl font-medium">${idx+1}. ${formatFn(i)} ${trend}</div>`;
+            }).join('') : '<div class="text-slate-400">ไม่พบข้อมูล</div>';
+        }
+
+        function loadReport() {
+            const month = parseInt(document.getElementById('reportMonth').value);
+            ['topWrong', 'topCorrect', 'topDays', 'topAvg'].forEach(id => document.getElementById(id).innerHTML = '');
+            if (!month || !db[month]) return;
+
+            const prevMonth = month - 1;
+            const currentData = processData(month, false);
+            const prevData = prevMonth > 0 ? processData(prevMonth, false) : null;
+            
+            if (!currentData) return;
+            const { wrongItems, correctItems } = currentData;
+            
+            const pWrong = prevData ? prevData.wrongItems : null;
+            const pCorrect = prevData ? [...prevData.correctItems].sort((a,b) => b.amount - a.amount) : null;
+            const pDays = prevData ? [...prevData.correctItems].sort((a,b) => b.days - a.days) : null;
+            const pAvg = prevData ? [...prevData.correctItems].sort((a,b) => b.avg - a.avg) : null;
+
+            renderTrendList('topWrong', wrongItems, i => `${i.name} <b class="float-right">${i.amount.toLocaleString()}</b>`, 10, pWrong, 'name', true);
+            renderTrendList('topCorrect', [...correctItems].sort((a,b) => b.amount - a.amount), i => `${i.name} <b class="float-right">${i.amount.toLocaleString()}</b>`, 10, pCorrect);
+            renderTrendList('topDays', [...correctItems].sort((a,b) => b.days - a.days), i => `${i.name} <b class="float-right">${i.days} วัน</b>`, 10, pDays);
+            renderTrendList('topAvg', [...correctItems].sort((a,b) => b.avg - a.avg), i => `${i.name} <b class="float-right">${Math.round(i.avg).toLocaleString()}</b>`, 10, pAvg);
+        }
+
+        // --- ส่วนการทำงานของหน้ากราฟ ---
+        let errChartInstance = null;
+        let succChartInstance = null;
+
+        const minMaxLabelsPlugin = {
+    id: 'minMaxLabels',
+    afterDatasetsDraw(chart, args, options) {
+        const { ctx, data } = chart;
+        const config = chart.options.plugins.minMaxLabels;
+        if (!config || !config.enabled) return;
+
+        ctx.save();
+        const dataset = data.datasets[0];
+        const meta = chart.getDatasetMeta(0);
+        const values = dataset.data.map(Number);
+        
+        // กรองเฉพาะค่าที่มีข้อมูลจริง (มากกว่า 0) เพื่อหาค่า Max/Min
+        const validValues = values.filter(v => v > 0);
+        if (validValues.length === 0) { ctx.restore(); return; }
+
+        const maxVal = Math.max(...validValues);
+        const minVal = Math.min(...validValues);
+
+        const maxIdx = values.indexOf(maxVal);
+        const minIdx = values.indexOf(minVal);
+
+        ctx.font = 'bold 11px Prompt';
+        ctx.textAlign = 'center';
+
+        meta.data.forEach((point, idx) => {
+            const val = values[idx];
+            // ตรวจสอบเงื่อนไข: แสดงผลเฉพาะวันที่ค่ามากกว่า 0 เท่านั้น
+            if (val > 0) {
+                if (idx === maxIdx) {
+                    ctx.fillStyle = config.maxColor || '#dc2626'; // ใช้สีตาม Config
+                    ctx.textBaseline = 'bottom';
+                    ctx.fillText(maxVal.toFixed(2) + '%', point.x, point.y - 8);
+                } else if (idx === minIdx && maxIdx !== minIdx) {
+                    ctx.fillStyle = config.minColor || '#16a34a'; // ใช้สีตาม Config
+                    ctx.textBaseline = 'top';
+                    ctx.fillText(minVal.toFixed(2) + '%', point.x, point.y + 8);
+                }
+            }
+        });
+        ctx.restore();
+    }
+};
+
+        Chart.register(minMaxLabelsPlugin);
+if (typeof ChartAnnotation !== 'undefined') {
+    Chart.register(ChartAnnotation);
+} else if (window['chartjs-plugin-annotation']) {
+    Chart.register(window['chartjs-plugin-annotation']);
+} else {
+    console.warn("ไม่พบ ChartAnnotation");
+}
+
+        function renderCharts(labels, errorRates, successRates) {
+    const ctxErr = document.getElementById('errorChart').getContext('2d');
+    const ctxSucc = document.getElementById('successChart').getContext('2d');
+
+    if (errChartInstance) errChartInstance.destroy();
+    if (succChartInstance) succChartInstance.destroy();
+
+    // 1. กราฟ % ยอดอนุมัติผิด (Max แดง, Min เขียว)
+    errChartInstance = new Chart(ctxErr, {
+        type: 'line',
+        data: { labels: labels, datasets: [{ label: '% ยอดผิด', data: errorRates, borderColor: '#be123c', backgroundColor: 'rgba(190, 18, 60, 0.1)', borderWidth: 2, fill: true, tension: 0.3 }] },
+        options: {
+            responsive: true,
+            layout: { padding: { right: 20 } },
+            plugins: {
+                // เพิ่มส่วนนี้เข้าไป
+                minMaxLabels: { 
+                    enabled: true, 
+                    maxColor: '#dc2626', // แดง
+                    minColor: '#16a34a'  // เขียว
+                },
+                annotation: {
+                    annotations: {
+                        targetLine: {
+                            type: 'line',
+                            yMin: 0.05,
+                            yMax: 0.05,
+                            borderColor: '#dc2626',
+                            borderWidth: 2,
+                            borderDash: [6, 6],
+                            label: { display: false }
+                        }
+                    }
+                }
+            },
+            scales: { y: { beginAtZero: true, ticks: { callback: v => v.toFixed(2) + '%' } } }
+        }
+    });
+
+    // 2. กราฟ % ยอดอนุมัติถูก (Max เขียว, Min แดง)
+    succChartInstance = new Chart(ctxSucc, {
+        type: 'line',
+        data: { labels: labels, datasets: [{ label: '% ยอดถูก', data: successRates, borderColor: '#047857', backgroundColor: 'rgba(4, 120, 87, 0.1)', borderWidth: 2, fill: true, tension: 0.3 }] },
+        options: {
+            responsive: true,
+            layout: { padding: { right: 20 } },
+            plugins: {
+                // เพิ่มส่วนนี้เข้าไป
+                minMaxLabels: { 
+                    enabled: true, 
+                    maxColor: '#16a34a', // เขียว
+                    minColor: '#dc2626'  // แดง
+                },
+                annotation: {
+                    annotations: {
+                        targetLine: {
+                            type: 'line',
+                            yMin: 99.95,
+                            yMax: 99.95,
+                            borderColor: '#047857',
+                            borderWidth: 2,
+                            borderDash: [6, 6],
+                            label: { display: false }
+                        }
+                    }
+                }
+            },
+            scales: { y: { min: 99.90, max: 100.00, ticks: { callback: v => v.toFixed(2) + '%' } } }
+        }
+    });
+
+    // บังคับอัปเดตตำแหน่ง
+    setTimeout(() => {
+        if (errChartInstance) errChartInstance.update();
+        if (succChartInstance) succChartInstance.update();
+    }, 150);
+}
+
+let summaryBarInstance = null;
+
+function renderSummaryBarChart() {
+    const ctx = document.getElementById('summaryBarChart').getContext('2d');
+    if (summaryBarInstance) summaryBarInstance.destroy();
+
+    const currentMonth = parseInt(document.getElementById('graphMonthSelect').value);
+    const statsContainer = document.getElementById('summaryStats');
+    
+    // ล้างข้อมูลเก่า
+    statsContainer.innerHTML = '';
+
+    if (!currentMonth) return;
+
+    // --- ส่วนคำนวณกราฟ ---
+    const monthNames = ["", "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+    const monthIndices = [currentMonth - 2, currentMonth - 1, currentMonth].map(m => (m <= 0 ? m + 12 : m));
+    
+    const labels = monthIndices.map(m => monthNames[m]);
+    const appTotals = monthIndices.map(m => (db[m] && db[m].monthlyTotals ? db[m].monthlyTotals.totalApp : 0));
+    
+    // --- จุดที่แก้ไข: เปลี่ยน 0 เป็น null สำหรับยอดที่ไม่มีข้อมูล ---
+    const errTotals = monthIndices.map(m => {
+        const val = (db[m] && db[m].monthlyTotals ? db[m].monthlyTotals.totalErr : 0);
+        return val > 0 ? val : null; 
+    });
+
+    // --- ส่วนแสดงผลสรุปยอดเดือนปัจจุบัน ---
+    const currentData = db[currentMonth] && db[currentMonth].monthlyTotals ? db[currentMonth].monthlyTotals : { totalApp: 0, totalErr: 0 };
+    const totalApp = currentData.totalApp;
+    const totalErr = currentData.totalErr;
+    
+    const errRate = totalApp > 0 ? (totalErr / totalApp) * 100 : 0;
+    const succRate = totalApp > 0 ? ((totalApp - totalErr) / totalApp) * 100 : 100;
+
+    const isErrPass = errRate <= 0.05;
+    const isSuccPass = succRate >= 99.95;
+
+    statsContainer.innerHTML = `
+        <div class="space-y-4 text-sm">
+            <div>
+                <p class="text-slate-500 font-medium">ยอดอนุมัติรวม</p>
+                <p class="text-xl font-bold text-slate-800">${totalApp.toLocaleString()}</p>
+            </div>
+            <div>
+                <p class="text-slate-500 font-medium">ยอดอนุมัติผิดรวม</p>
+                <p class="text-xl font-bold text-rose-600">${totalErr.toLocaleString()}</p>
+            </div>
+            <div class="pt-2 border-t border-slate-100">
+                <p class="text-slate-500 font-medium">% ยอดผิด (Target 0.05%)</p>
+                <p class="text-lg font-bold ${isErrPass ? 'text-emerald-600' : 'text-rose-600'}">
+                    ${errRate.toFixed(2)}% ${isErrPass ? '✅ ผ่าน' : '❌ ไม่ผ่าน'}
+                </p>
+            </div>
+            <div>
+                <p class="text-slate-500 font-medium">% ยอดถูก (Target 99.95%)</p>
+                <p class="text-lg font-bold ${isSuccPass ? 'text-emerald-600' : 'text-rose-600'}">
+                    ${succRate.toFixed(2)}% ${isSuccPass ? '✅ ผ่าน' : '❌ ไม่ผ่าน'}
+                </p>
+            </div>
+        </div>
+    `;
+
+    // --- ส่วนสร้างกราฟ ---
+    summaryBarInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                { 
+                    label: 'ยอดอนุมัติรวม', 
+                    data: appTotals, 
+                    backgroundColor: '#0ea5e9'
+                },
+                { 
+                    label: 'ยอดอนุมัติผิด', 
+                    data: errTotals, // ส่งค่า null สำหรับ 0 และส่งตัวเลขจริงสำหรับค่าที่มี
+                    backgroundColor: '#f43f5e',
+                    minBarLength: 5 // เฉพาะค่าที่เป็นตัวเลขจริงจะแสดงความสูงขั้นต่ำนี้
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+	    layout: { padding: { top: 20 } },
+            scales: {
+                x: { grid: { display: false }, categoryPercentage: 0.6, barPercentage: 0.7 },
+                y: { type: 'linear', display: false, grid: { display: false }, beginAtZero: true }
+            },
+            plugins: {
+                legend: { 
+                    position: 'bottom',
+                    labels: {
+                        padding: 20 }
+                },
+                datalabels: {
+                    anchor: 'end',
+                    align: 'top',
+                    formatter: (value) => (value !== null && value > 0 ? value.toLocaleString() : ""),
+                    color: '#334155',
+                    font: { weight: 'bold' }
+                }
+            }
+        },
+        plugins: [ChartDataLabels]
+    });
+}
+
+        async function processExcelFiles() {
+    const month = document.getElementById('graphMonthSelect').value;
+    if (!month) return alert('กรุณาเลือกเดือน');
+    
+    // ดึงไฟล์และประมวลผลข้อมูลรายวัน
+    const [appData, errData] = await Promise.all([
+        readExcel(document.getElementById('approvalFile').files[0]), 
+        readExcel(document.getElementById('errorFile').files[0])
+    ]);
+    
+    const appSums = getDailySums(appData);
+    const errSums = getDailySums(errData);
+    
+    // --- ส่วนที่เพิ่ม: คำนวณยอดรวมรายเดือน ---
+    const totalApp = Object.values(appSums).reduce((a, b) => a + b, 0);
+    const totalErr = Object.values(errSums).reduce((a, b) => a + b, 0);
+    // -------------------------------------
+
+    const sortedDates = Object.keys(appSums).sort((a, b) => a - b);
+    
+    const labels = [], errorRates = [], successRates = [];
+    sortedDates.forEach(d => {
+        const app = appSums[d] || 0, err = errSums[d] || 0;
+        labels.push(`วันที่ ${d}`);
+        errorRates.push(app > 0 ? parseFloat(((err / app) * 100).toFixed(2)) : 0);
+        successRates.push(app > 0 ? parseFloat(((1 - err / app) * 100).toFixed(2)) : 0);
+    });
+
+    if (!db[month]) db[month] = {};
+    
+    // บันทึกข้อมูลทั้งข้อมูลกราฟรายวัน และยอดรวมรายเดือน
+    db[month].graphData = { labels, errorRates, successRates };
+    db[month].monthlyTotals = { totalApp, totalErr }; 
+    
+    localStorage.setItem('approvalData', JSON.stringify(db));
+    
+    // สั่งวาดกราฟทั้ง 2 ชุด
+    renderCharts(labels, errorRates, successRates);
+    renderSummaryBarChart(); 
+    
+    document.getElementById('graphResults').classList.remove('hidden');
+}
+
+        function loadGraphData() {
+    const month = document.getElementById('graphMonthSelect').value;
+    if (db[month] && db[month].graphData) {
+        const { labels, errorRates, successRates } = db[month].graphData;
+        renderCharts(labels, errorRates, successRates);
+        
+        // เพิ่มบรรทัดนี้: เรียกใช้กราฟแท่ง
+        renderSummaryBarChart(); 
+        
+        document.getElementById('graphResults').classList.remove('hidden');
+    } else {
+        document.getElementById('graphResults').classList.add('hidden');
+    }
+}
+
+// ฟังก์ชันสำหรับดาวน์โหลดไฟล์ Template
+function downloadWrongTemplate() {
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([["ชื่อพนักงาน", "ยอดผิด"], ["ตัวอย่าง", 100]]);
+    XLSX.utils.book_append_sheet(wb, ws, "Data");
+    XLSX.writeFile(wb, "Template_ยอดอนุมัติผิด.xlsx");
+}
+
+function downloadCorrectTemplate() {
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([["ชื่อพนักงาน", "ยอดอนุมัติ", "วันทำงาน"], ["ตัวอย่าง", 50000, 20]]);
+    XLSX.utils.book_append_sheet(wb, ws, "Data");
+    XLSX.writeFile(wb, "Template_ยอดอนุมัติและวันทำงาน.xlsx");
+}
+
+// ฟังก์ชันสำหรับอ่านข้อมูลจากไฟล์ Excel
+async function handleWrongFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const data = await readExcel(file);
+    const text = data.map(row => `${row['ชื่อพนักงาน']} ${row['ยอดผิด']}`).join('\n');
+    document.getElementById('wrongInput').value = text;
+}
+
+async function handleCorrectFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const data = await readExcel(file);
+    const text = data.map(row => `${row['ชื่อพนักงาน']} ${row['ยอดอนุมัติ']} ${row['วันทำงาน']}`).join('\n');
+    document.getElementById('correctInput').value = text;
+}
+
+document.getElementById('graphMonthSelect').addEventListener('change', function() {
+    renderSummaryBarChart(); // สั่งให้กราฟวาดใหม่ทุกครั้งที่เลือกเดือน
+});
+    </script>
+</body>
+</html>
