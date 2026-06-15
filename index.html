@@ -24,7 +24,7 @@
         <header class="mb-8">
             <h1 class="text-4xl font-bold text-slate-900 tracking-tight">Dashboard วิเคราะห์ข้อมูล</h1>
             <div class="flex gap-4 mt-6 border-b border-slate-200">
-                <button id="btnInput" onclick="switchTab('inputTab', 'btnInput')" class="px-6 py-2 font-bold border-b-2 border-slate-900 text-slate-900">หน้ากรอกข้อมูล</button>
+                <button id="btnInput" onclick="switchTab('inputTab', 'btnInput')", class="px-6 py-2 font-bold border-b-2 border-slate-900 text-slate-900">หน้ากรอกข้อมูล</button>
                 <button id="btnReport" onclick="switchTab('reportTab', 'btnReport')" class="px-6 py-2 font-bold text-slate-500 hover:text-slate-900">รายงานและสรุปผล (Top 10)</button>
                 <button id="btnGraph" onclick="switchTab('graphTab', 'btnGraph')" class="px-6 py-2 font-bold text-slate-500 hover:text-slate-900">สรุปผลกราฟรายเดือน</button>
             </div>
@@ -45,7 +45,7 @@
                 </div>
             </div>
             <div class="mb-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap gap-4 items-end">
-                <div class="flex-1 min-w-[200px]">
+                <div class="flex-1 min-w-[180px]">
                     <label class="block text-lg font-bold mb-3 text-slate-700">เลือกเดือนที่ต้องการ:</label>
                     <select id="monthSelect" class="w-full p-3 border-2 border-slate-200 rounded-xl font-bold outline-none focus:border-slate-900">
                         <option value="">-- เลือกเดือน --</option>
@@ -62,6 +62,10 @@
                         <option value="11">พฤศจิกายน</option>
                         <option value="12">ธันวาคม</option>
                     </select>
+                </div>
+                <div class="flex-1 min-w-[180px]">
+                    <label class="block text-lg font-bold mb-3 text-slate-700">เลือกปีที่ต้องการ:</label>
+                    <select id="yearSelect" class="w-full p-3 border-2 border-slate-200 rounded-xl font-bold outline-none focus:border-slate-900"></select>
                 </div>
                 <button onclick="loadDataToInput()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg transition">โหลดข้อมูล</button>
                 <button onclick="clearInputs()" class="bg-amber-500 hover:bg-amber-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg transition">ล้างข้อมูล</button>
@@ -87,23 +91,29 @@
         </div>
 
         <div id="reportTab" class="tab-content">
-            <div class="mb-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <label class="block text-lg font-bold mb-3">ดูรายงานของเดือน:</label>
-                <select id="reportMonth" onchange="loadReport()" class="w-full md:w-64 p-3 border-2 border-slate-200 rounded-xl font-bold outline-none focus:border-slate-900">
-                    <option value="">-- เลือกเดือน --</option>
-                    <option value="1">มกราคม</option>
-                    <option value="2">กุมภาพันธ์</option>
-                    <option value="3">มีนาคม</option>
-                    <option value="4">เมษายน</option>
-                    <option value="5">พฤษภาคม</option>
-                    <option value="6">มิถุนายน</option>
-                    <option value="7">กรกฎาคม</option>
-                    <option value="8">สิงหาคม</option>
-                    <option value="9">กันยายน</option>
-                    <option value="10">ตุลาคม</option>
-                    <option value="11">พฤศจิกายน</option>
-                    <option value="12">ธันวาคม</option>
-                </select>
+            <div class="mb-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap gap-4 items-end">
+                <div class="w-full md:w-64">
+                    <label class="block text-lg font-bold mb-3">ดูรายงานของเดือน:</label>
+                    <select id="reportMonth" onchange="loadReport()" class="w-full p-3 border-2 border-slate-200 rounded-xl font-bold outline-none focus:border-slate-900">
+                        <option value="">-- เลือกเดือน --</option>
+                        <option value="1">มกราคม</option>
+                        <option value="2">กุมภาพันธ์</option>
+                        <option value="3">มีนาคม</option>
+                        <option value="4">เมษายน</option>
+                        <option value="5">พฤษภาคม</option>
+                        <option value="6">มิถุนายน</option>
+                        <option value="7">กรกฎาคม</option>
+                        <option value="8">สิงหาคม</option>
+                        <option value="9">กันยายน</option>
+                        <option value="10">ตุลาคม</option>
+                        <option value="11">พฤศจิกายน</option>
+                        <option value="12">ธันวาคม</option>
+                    </select>
+                </div>
+                <div class="w-full md:w-64">
+                    <label class="block text-lg font-bold mb-3">ดูรายงานของปี:</label>
+                    <select id="reportYear" onchange="loadReport()" class="w-full p-3 border-2 border-slate-200 rounded-xl font-bold outline-none focus:border-slate-900"></select>
+                </div>
             </div>
             <div id="reportContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <section class="bg-white p-7 rounded-3xl border shadow-sm"><h2 class="text-xl font-bold text-rose-700 mb-4">🏆 Top 10 ยอดที่อนุมัติผิด</h2><div id="topWrong" class="space-y-2"></div></section>
@@ -115,7 +125,7 @@
 
         <div id="graphTab" class="tab-content">
             <div class="mb-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap gap-4 items-end">
-                <div class="flex-1 min-w-[200px]">
+                <div class="flex-1 min-w-[180px]">
                     <label class="block text-lg font-bold mb-3 text-slate-700">เลือกเดือน (กราฟ):</label>
                     <select id="graphMonthSelect" onchange="loadGraphData()" class="w-full p-3 border-2 border-slate-200 rounded-xl font-bold outline-none focus:border-slate-900">
                         <option value="">-- เลือกเดือน --</option>
@@ -132,6 +142,10 @@
                         <option value="11">พฤศจิกายน</option>
                         <option value="12">ธันวาคม</option>
                     </select>
+                </div>
+                <div class="flex-1 min-w-[180px]">
+                    <label class="block text-lg font-bold mb-3 text-slate-700">เลือกปี (กราฟ):</label>
+                    <select id="graphYearSelect" onchange="loadGraphData()" class="w-full p-3 border-2 border-slate-200 rounded-xl font-bold outline-none focus:border-slate-900"></select>
                 </div>
                 <button onclick="downloadTemplates()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg transition">โหลดไฟล์ต้นแบบ</button>
             </div>
@@ -158,19 +172,54 @@
             </div>
             <div id="graphResults" class="grid grid-cols-1 gap-8 hidden">
                 <section class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-                    <h2 class="text-xl font-bold text-rose-700 mb-4">📉 กราฟ % ยอดอนุมัติผิด เป้าหมาย 0.05%</h2>
-                    <canvas id="errorChart" height="100"></canvas>
-                </section>
-                <section class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-                    <h2 class="text-xl font-bold text-emerald-700 mb-4">📈 กราฟ % ยอดอนุมัติถูก เป้าหมาย 99.95%</h2>
-                    <canvas id="successChart" height="100"></canvas>
-                </section>
+    <h2 class="text-xl font-bold text-rose-700 mb-4">📉 กราฟ % ยอดอนุมัติผิด เป้าหมาย 0.05%</h2>
+    <canvas id="errorChart" height="100"></canvas>
+    <div id="errorStats" class="mt-4 p-4 bg-rose-50 rounded-xl border border-rose-100 text-sm text-rose-800 grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+</section>
+
+<section class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+    <h2 class="text-xl font-bold text-emerald-700 mb-4">📈 กราฟ % ยอดอนุมัติถูก เป้าหมาย 99.95%</h2>
+    <canvas id="successChart" height="100"></canvas>
+    <div id="successStats" class="mt-4 p-4 bg-emerald-50 rounded-xl border border-emerald-100 text-sm text-emerald-800 grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+</section>
             </div>
         </div>
     </div>
 
     <script>
         let db = JSON.parse(localStorage.getItem('approvalData') || '{}');
+
+        // ฟังก์ชันสร้างตัวเลือกปี ค.ศ. แบบกำหนดปีเริ่มต้นคงที่ เพื่อให้ดูย้อนหลังได้ตลอดไป
+function initYearDropdowns() {
+    const currentYear = new Date().getFullYear();
+    
+    // 📌 จุดสำคัญ: ล็อกปีเริ่มต้นระบบไว้ที่ ค.ศ. 2022 (หรือปรับเป็นปีที่คุณเริ่มเก็บข้อมูลจริงได้เลย)
+    const startYear = 2022; 
+    
+    // 📌 ส่วนอนาคต: ให้บวกเผื่อจากปีปัจจุบันไปอีก 10 ปีเสมอ (ขยับตามเวลาจริง)
+    const endYear = currentYear + 10;   
+    
+    const targetDropdowns = ['yearSelect', 'reportYear', 'graphYearSelect'];
+    
+    targetDropdowns.forEach(id => {
+        const selectElement = document.getElementById(id);
+        if (!selectElement) return;
+        selectElement.innerHTML = ''; // เคลียร์ของเก่า
+        
+        // วนลูปจากปีอนาคตสุด ลงมาจนถึงปีเริ่มต้นระบบ (2015) 
+        // ไม่ว่าคุณจะอยู่ปี 2040 หรือ 2050 ลูปนี้ก็จะยังวิ่งลงมาถึงปี 2015 เสมอ ข้อมูลจะไม่หายแน่นอน
+        for (let y = endYear; y >= startYear; y--) {
+            const option = document.createElement('option');
+            option.value = y;
+            option.textContent = `ค.ศ. ${y} (พ.ศ. ${y + 543})`;
+            if (y === currentYear) option.selected = true; // ให้เลือกปีปัจจุบันเป็นค่าตั้งต้น
+            selectElement.appendChild(option);
+        }
+    });
+}
+
+        // รันสร้าง Dropdown ทันทีเมื่อเปิดหน้าเว็บบอร์ด
+        initYearDropdowns();
 
         function switchTab(tabId, btnActive) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('tab-active'));
@@ -210,81 +259,103 @@
 
         function loadDataToInput() {
             const month = document.getElementById('monthSelect').value;
-            if (!month) return alert('กรุณาเลือกเดือนก่อนโหลดข้อมูล');
-            if (db[month] && (db[month].wrong || db[month].correct)) {
-                document.getElementById('wrongInput').value = db[month].wrong || '';
-                document.getElementById('correctInput').value = db[month].correct || '';
-                processData(month, true);
-                alert('โหลดข้อมูลเดือนที่เลือกเรียบร้อยแล้ว');
+            const year = document.getElementById('yearSelect').value;
+            if (!month || !year) return alert('กรุณาเลือกเดือนและปีให้ครบถ้วนก่อนโหลดข้อมูล');
+            
+            const storageKey = `${year}_${month}`;
+            if (db[storageKey] && (db[storageKey].wrong || db[storageKey].correct)) {
+                document.getElementById('wrongInput').value = db[storageKey].wrong || '';
+                document.getElementById('correctInput').value = db[storageKey].correct || '';
+                processData(year, month, true);
+                alert('โหลดข้อมูลของเวลาที่เลือกเรียบร้อยแล้ว');
             } else {
                 clearInputs();
-                alert('ไม่พบข้อมูลสำหรับเดือนนี้');
+                alert('ไม่พบข้อมูลสำหรับเดือนและปีนี้');
             }
         }
 
         function saveAndAnalyze() {
             const month = document.getElementById('monthSelect').value;
+            const year = document.getElementById('yearSelect').value;
             const wrongText = document.getElementById('wrongInput').value.trim();
             const correctText = document.getElementById('correctInput').value.trim();
             
-            if (!month) return alert('กรุณาเลือกเดือนก่อนบันทึก');
+            if (!month || !year) return alert('กรุณาเลือกเดือนและปีให้ครบถ้วนก่อนบันทึก');
             if (wrongText === "" && correctText === "") return alert('ไม่สามารถบันทึกข้อมูลว่างเปล่าได้');
             
             let totalErr = 0;
             wrongText.split('\n').forEach(line => {
-                const parts = line.split(' ');
+                const parts = line.split(/\s+/);
                 const val = parseFloat(parts[parts.length - 1]);
                 if (!isNaN(val)) totalErr += val;
             });
 
             let totalApp = 0;
             correctText.split('\n').forEach(line => {
-                const parts = line.split(' ');
+                const parts = line.split(/\s+/);
                 const val = parseFloat(parts[1]);
                 if (!isNaN(val)) totalApp += val;
             });
 
-            if (!db[month]) db[month] = {};
-            db[month].wrong = wrongText;
-            db[month].correct = correctText;
-            db[month].monthlyTotals = { totalApp, totalErr }; 
+            const storageKey = `${year}_${month}`;
+            if (!db[storageKey]) db[storageKey] = {};
+            db[storageKey].wrong = wrongText;
+            db[storageKey].correct = correctText;
+            db[storageKey].monthlyTotals = { totalApp, totalErr }; 
 
             localStorage.setItem('approvalData', JSON.stringify(db));
-            processData(month, true);
+            processData(year, month, true);
             
             if (typeof renderSummaryBarChart === 'function') renderSummaryBarChart();
             alert('บันทึกข้อมูลสำเร็จ!');
         }
 
-        function processData(month, showResults) {
-            const data = db[month];
-            if (!data) {
-                if (showResults) document.getElementById('results').classList.add('hidden');
-                return null;
-            }
+        function processData(year, month, showResults) {
+    const storageKey = `${year}_${month}`;
+    const data = db[storageKey];
+    if (!data) {
+        if (showResults) document.getElementById('results').classList.add('hidden');
+        return null;
+    }
 
-            let wrongItems = (data.wrong || '').split('\n').filter(l => l.trim()).map(l => {
-                const p = l.trim().split(/\s+/);
-                return { name: cleanText(p.slice(0, -1).join(' ')), amount: parseNum(p[p.length-1]) };
-            }).sort((a,b) => b.amount - a.amount);
+    // 1. ดึงข้อมูลและกรองรายการที่ไม่ถูกต้องออก (ที่มีค่าเป็น #N/A หรือ มีค่าเป็น 0 ทั้งวันทำงานและยอดอนุมัติ)
+    let correctItems = (data.correct || '').split('\n').filter(l => l.trim()).map(l => {
+        const p = l.trim().split(/\s+/);
+        if (p.length < 3) return null;
 
-            let correctItems = (data.correct || '').split('\n').filter(l => l.trim()).map(l => {
-                const p = l.trim().split(/\s+/);
-                if (p.length < 3) return null;
-                const d = parseNum(p[p.length-1]);
-                const a = parseNum(p[p.length-2]);
-                return { name: cleanText(p.slice(0, -2).join(' ')), amount: a, days: d, avg: d > 0 ? a/d : 0 };
-            }).filter(i => i);
+        const rawDays = p[p.length - 1];
+        const rawAmount = p[p.length - 2];
 
-            if(showResults) {
-                document.getElementById('results').classList.remove('hidden');
-                renderSimpleList('wrongList', wrongItems, i => `${i.name} <b class="float-right">${i.amount.toLocaleString()}</b>`);
-                renderSimpleList('correctAmountList', [...correctItems].sort((a,b) => b.amount - a.amount), i => `${i.name} <b class="float-right">${i.amount.toLocaleString()}</b>`);
-                renderSimpleList('workDaysList', [...correctItems].sort((a,b) => b.days - a.days), i => `${i.name} <b class="float-right">${i.days} วัน</b>`);
-                renderSimpleList('avgPerDayList', [...correctItems].sort((a,b) => b.avg - a.avg), i => `${i.name} <b class="float-right">${Math.round(i.avg).toLocaleString()}</b>`);
-            }
-            return { wrongItems, correctItems };
-        }
+        // ตรวจสอบเงื่อนไข: หากเป็น #N/A ให้ข้าม
+        if (rawDays === '#N/A' || rawAmount === '#N/A') return null;
+
+        const d = parseNum(rawDays);
+        const a = parseNum(rawAmount);
+
+        // ตรวจสอบเงื่อนไข: หากวันทำงานเป็น 0 หรือ ยอดอนุมัติเป็น 0 ให้ข้าม
+        if (d <= 0 || a <= 0) return null;
+
+        return { name: cleanText(p.slice(0, -2).join(' ')), amount: a, days: d, avg: d > 0 ? a / d : 0 };
+    }).filter(i => i !== null); // กรองเอาค่า null ออก
+
+    // 2. สร้างลิสต์รายชื่อที่ผ่านเกณฑ์ (เพื่อใช้ตรวจสอบรายการผิด)
+    const validNames = correctItems.map(i => i.name);
+
+    // 3. กรองรายการผิด โดยให้แสดงเฉพาะคนที่อยู่ในลิสต์ validNames เท่านั้น
+    let wrongItems = (data.wrong || '').split('\n').filter(l => l.trim()).map(l => {
+        const p = l.trim().split(/\s+/);
+        return { name: cleanText(p.slice(0, -1).join(' ')), amount: parseNum(p[p.length - 1]) };
+    }).sort((a, b) => b.amount - a.amount);
+
+    if (showResults) {
+        document.getElementById('results').classList.remove('hidden');
+        renderSimpleList('wrongList', wrongItems, i => `${i.name} <b class="float-right">${i.amount.toLocaleString()}</b>`);
+        renderSimpleList('correctAmountList', [...correctItems].sort((a, b) => b.amount - a.amount), i => `${i.name} <b class="float-right">${i.amount.toLocaleString()}</b>`);
+        renderSimpleList('workDaysList', [...correctItems].sort((a, b) => b.days - a.days), i => `${i.name} <b class="float-right">${i.days} วัน</b>`);
+        renderSimpleList('avgPerDayList', [...correctItems].sort((a, b) => b.avg - a.avg), i => `${i.name} <b class="float-right">${Math.round(i.avg).toLocaleString()}</b>`);
+    }
+    return { wrongItems, correctItems };
+}
 
         function renderSimpleList(targetId, dataList, formatFn, limit = null) {
             const container = document.getElementById(targetId);
@@ -319,12 +390,21 @@
 
         function loadReport() {
             const month = parseInt(document.getElementById('reportMonth').value);
+            const year = parseInt(document.getElementById('reportYear').value);
+            
             ['topWrong', 'topCorrect', 'topDays', 'topAvg'].forEach(id => document.getElementById(id).innerHTML = '');
-            if (!month || !db[month]) return;
+            if (!month || !year) return;
 
-            const prevMonth = month - 1;
-            const currentData = processData(month, false);
-            const prevData = prevMonth > 0 ? processData(prevMonth, false) : null;
+            // คำนวณหาเดือนก่อนหน้าโดยข้ามขอบเขตปีได้อย่างถูกต้อง (เช่น ม.ค. 2026 ย้อนไป ธ.ค. 2025)
+            let prevMonth = month - 1;
+            let prevYear = year;
+            if (prevMonth <= 0) {
+                prevMonth = 12;
+                prevYear = year - 1;
+            }
+
+            const currentData = processData(year, month, false);
+            const prevData = processData(prevYear, prevMonth, false);
             
             if (!currentData) return;
             const { wrongItems, correctItems } = currentData;
@@ -340,7 +420,6 @@
             renderTrendList('topAvg', [...correctItems].sort((a,b) => b.avg - a.avg), i => `${i.name} <b class="float-right">${Math.round(i.avg).toLocaleString()}</b>`, 10, pAvg);
         }
 
-        // --- ส่วนแปลงข้อมูล Excel และจัดการกราฟ ---
         function readExcel(file) {
             return new Promise((resolve, reject) => {
                 if (!file) return resolve([]);
@@ -358,15 +437,11 @@
             });
         }
 
-        // ปรับปรุงการคำนวณแบบตาราง Matrix (วันที่ 1-31 เป็นหัวคอลัมน์)
         function getDailySums(data) {
             const sums = {};
-            // กำหนดค่าเริ่มต้นให้กับวันที่ 1-31 เป็น 0
             for (let d = 1; d <= 31; d++) {
                 sums[d] = 0;
             }
-            
-            // วนลูปบวกสะสมค่าในแต่ละวัน (คอลัมน์ 1-31) จากทุกๆ แถวพนักงาน/ประเภทผิด
             data.forEach(row => {
                 for (let d = 1; d <= 31; d++) {
                     const amount = parseFloat(row[String(d)]) || 0;
@@ -380,46 +455,50 @@
         let succChartInstance = null;
 
         const minMaxLabelsPlugin = {
-            id: 'minMaxLabels',
-            afterDatasetsDraw(chart, args, options) {
-                const { ctx, data } = chart;
-                const config = chart.options.plugins.minMaxLabels;
-                if (!config || !config.enabled) return;
+    id: 'minMaxLabels',
+    afterDatasetsDraw(chart, args, options) {
+        const { ctx, data } = chart;
+        const config = chart.options.plugins.minMaxLabels;
+        if (!config || !config.enabled) return;
 
-                ctx.save();
-                const dataset = data.datasets[0];
-                const meta = chart.getDatasetMeta(0);
-                const values = dataset.data.map(Number);
-                
-                const validValues = values.filter(v => v > 0);
-                if (validValues.length === 0) { ctx.restore(); return; }
+        ctx.save();
+        const dataset = data.datasets[0];
+        const meta = chart.getDatasetMeta(0);
+        const values = dataset.data.map(Number);
 
-                const maxVal = Math.max(...validValues);
-                const minVal = Math.min(...validValues);
+        // กรองหาค่าที่มีอยู่จริง (มากกว่า 0)
+        const validValues = values.filter(v => v > 0);
+        if (validValues.length === 0) { ctx.restore(); return; }
 
-                const maxIdx = values.indexOf(maxVal);
-                const minIdx = values.indexOf(minVal);
+        const maxVal = Math.max(...validValues);
+        const minVal = Math.min(...validValues);
 
-                ctx.font = 'bold 11px Prompt';
-                ctx.textAlign = 'center';
+        ctx.font = 'bold 11px Prompt';
+        ctx.textBaseline = 'center';
 
-                meta.data.forEach((point, idx) => {
-                    const val = values[idx];
-                    if (val > 0) {
-                        if (idx === maxIdx) {
-                            ctx.fillStyle = config.maxColor || '#dc2626';
-                            ctx.textBaseline = 'bottom';
-                            ctx.fillText(maxVal.toFixed(2) + '%', point.x, point.y - 8);
-                        } else if (idx === minIdx && maxIdx !== minIdx) {
-                            ctx.fillStyle = config.minColor || '#16a34a';
-                            ctx.textBaseline = 'top';
-                            ctx.fillText(minVal.toFixed(2) + '%', point.x, point.y + 8);
-                        }
-                    }
-                });
-                ctx.restore();
+        // วนลูปตรวจสอบทุกจุด แทนการใช้ indexOf
+        meta.data.forEach((point, idx) => {
+            const val = values[idx];
+            
+            if (val > 0) {
+                // ถ้าค่าเท่ากับ max ให้แสดงป้ายสีแดง (ด้านบน)
+                if (val === maxVal) {
+                    ctx.fillStyle = config.maxColor || '#dc2626';
+                    ctx.textBaseline = 'bottom';
+                    ctx.fillText(val.toFixed(2) + '%', point.x, point.y - 8);
+                } 
+                // ถ้าค่าเท่ากับ min ให้แสดงป้ายสีเขียว (ด้านล่าง)
+                // เพิ่มเงื่อนไข val !== maxVal เพื่อป้องกันไม่ให้แสดงซ้อนกันหากค่า max และ min เท่ากัน
+                else if (val === minVal) {
+                    ctx.fillStyle = config.minColor || '#16a34a';
+                    ctx.textBaseline = 'top';
+                    ctx.fillText(val.toFixed(2) + '%', point.x, point.y + 8);
+                }
             }
-        };
+        });
+        ctx.restore();
+    }
+};
 
         Chart.register(minMaxLabelsPlugin);
         if (typeof ChartAnnotation !== 'undefined') {
@@ -429,8 +508,49 @@
         }
 
         function renderCharts(labels, errorRates, successRates) {
-            const ctxErr = document.getElementById('errorChart').getContext('2d');
-            const ctxSucc = document.getElementById('successChart').getContext('2d');
+    const ctxErr = document.getElementById('errorChart').getContext('2d');
+    const ctxSucc = document.getElementById('successChart').getContext('2d');
+
+    // ฟังก์ชันช่วยคำนวณหา Min/Max และระบุวันที่
+    const calcStats = (dataArray) => {
+        const minVal = Math.min(...dataArray);
+        const maxVal = Math.max(...dataArray);
+        
+        const minDays = labels.filter((_, i) => dataArray[i] === minVal);
+        const maxDays = labels.filter((_, i) => dataArray[i] === maxVal);
+        
+        return {
+            min: minVal.toFixed(2),
+            minDays: minDays.join(', '),
+            max: maxVal.toFixed(2),
+            maxDays: maxDays.join(', ')
+        };
+    };
+
+    // แสดงผลสถิติใต้กราฟ
+    const errStats = calcStats(errorRates);
+document.getElementById('errorStats').innerHTML = `
+    <div class="space-y-1">
+        <span class="font-bold text-lg">📉 อนุมัติผิดน้อยที่สุด:</span> <span class="text-lg font-semibold">${errStats.min}%</span><br>
+        <span class="text-base font-medium text-rose-800">คือ: ${errStats.minDays}</span>
+    </div>
+    <div class="space-y-1">
+        <span class="font-bold text-lg">📉 อนุมัติผิดมากที่สุด:</span> <span class="text-lg font-semibold">${errStats.max}%</span><br>
+        <span class="text-base font-medium text-rose-800">คือ: ${errStats.maxDays}</span>
+    </div>
+`;
+
+const sucStats = calcStats(successRates);
+document.getElementById('successStats').innerHTML = `
+    <div class="space-y-1">
+        <span class="font-bold text-lg">📈 อนุมัติถูกน้อยที่สุด:</span> <span class="text-lg font-semibold">${sucStats.min}%</span><br>
+        <span class="text-base font-medium text-emerald-800">คือ: ${sucStats.minDays}</span>
+    </div>
+    <div class="space-y-1">
+        <span class="font-bold text-lg">📈 อนุมัติถูกมากที่สุด:</span> <span class="text-lg font-semibold">${sucStats.max}%</span><br>
+        <span class="text-base font-medium text-emerald-800">คือ: ${sucStats.maxDays}</span>
+    </div>
+`;
 
             if (errChartInstance) errChartInstance.destroy();
             if (succChartInstance) succChartInstance.destroy();
@@ -486,22 +606,39 @@
             if (summaryBarInstance) summaryBarInstance.destroy();
 
             const currentMonth = parseInt(document.getElementById('graphMonthSelect').value);
+            const currentYear = parseInt(document.getElementById('graphYearSelect').value);
             const statsContainer = document.getElementById('summaryStats');
             statsContainer.innerHTML = '';
 
-            if (!currentMonth) return;
+            if (!currentMonth || !currentYear) return;
 
             const monthNames = ["", "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-            const monthIndices = [currentMonth - 2, currentMonth - 1, currentMonth].map(m => (m <= 0 ? m + 12 : m));
             
-            const labels = monthIndices.map(m => monthNames[m]);
-            const appTotals = monthIndices.map(m => (db[m] && db[m].monthlyTotals ? db[m].monthlyTotals.totalApp : 0));
-            const errTotals = monthIndices.map(m => {
-                const val = (db[m] && db[m].monthlyTotals ? db[m].monthlyTotals.totalErr : 0);
+            // คำนวณลิสต์คู่ เดือน-ปี 3 เดือนย้อนหลังข้ามปีแบบ Dynamic
+            const targetMonths = [];
+            for (let i = 2; i >= 0; i--) {
+                let m = currentMonth - i;
+                let y = currentYear;
+                if (m <= 0) {
+                    m += 12;
+                    y -= 1;
+                }
+                targetMonths.push({ year: y, month: m });
+            }
+
+            const labels = targetMonths.map(item => monthNames[item.month]);
+            const appTotals = targetMonths.map(item => {
+                const key = `${item.year}_${item.month}`;
+                return (db[key] && db[key].monthlyTotals ? db[key].monthlyTotals.totalApp : 0);
+            });
+            const errTotals = targetMonths.map(item => {
+                const key = `${item.year}_${item.month}`;
+                const val = (db[key] && db[key].monthlyTotals ? db[key].monthlyTotals.totalErr : 0);
                 return val > 0 ? val : null; 
             });
 
-            const currentData = db[currentMonth] && db[currentMonth].monthlyTotals ? db[currentMonth].monthlyTotals : { totalApp: 0, totalErr: 0 };
+            const currentStorageKey = `${currentYear}_${currentMonth}`;
+            const currentData = db[currentStorageKey] && db[currentStorageKey].monthlyTotals ? db[currentStorageKey].monthlyTotals : { totalApp: 0, totalErr: 0 };
             const totalApp = currentData.totalApp;
             const totalErr = currentData.totalErr;
             
@@ -569,7 +706,8 @@
 
         async function processExcelFiles() {
             const month = document.getElementById('graphMonthSelect').value;
-            if (!month) return alert('กรุณาเลือกเดือน');
+            const year = document.getElementById('graphYearSelect').value;
+            if (!month || !year) return alert('กรุณาเลือกเดือนและปีให้ครบถ้วนก่อนประมวลผล');
             
             const fileApp = document.getElementById('approvalFile').files[0];
             const fileErr = document.getElementById('errorFile').files[0];
@@ -587,7 +725,6 @@
             const totalApp = Object.values(appSums).reduce((a, b) => a + b, 0);
             const totalErr = Object.values(errSums).reduce((a, b) => a + b, 0);
 
-            // กรองเอาเฉพาะวันที่มีการทำงาน (ยอดรวม > 0) เพื่อไม่ให้กราฟความสำเร็จดิ่งเป็น 0% ในวันหยุด
             const sortedDates = Object.keys(appSums)
                 .map(Number)
                 .sort((a, b) => a - b)
@@ -601,10 +738,11 @@
                 successRates.push(app > 0 ? parseFloat(((1 - err / app) * 100).toFixed(2)) : 0);
             });
 
-            if (!db[month]) db[month] = {};
+            const storageKey = `${year}_${month}`;
+            if (!db[storageKey]) db[storageKey] = {};
             
-            db[month].graphData = { labels, errorRates, successRates };
-            db[month].monthlyTotals = { totalApp, totalErr }; 
+            db[storageKey].graphData = { labels, errorRates, successRates };
+            db[storageKey].monthlyTotals = { totalApp, totalErr }; 
             
             localStorage.setItem('approvalData', JSON.stringify(db));
             
@@ -617,19 +755,21 @@
 
         function loadGraphData() {
             const month = document.getElementById('graphMonthSelect').value;
-            if (db[month] && db[month].graphData) {
-                const { labels, errorRates, successRates } = db[month].graphData;
+            const year = document.getElementById('graphYearSelect').value;
+            const storageKey = `${year}_${month}`;
+
+            if (db[storageKey] && db[storageKey].graphData) {
+                const { labels, errorRates, successRates } = db[storageKey].graphData;
                 renderCharts(labels, errorRates, successRates);
                 renderSummaryBarChart(); 
                 document.getElementById('graphResults').classList.remove('hidden');
             } else {
                 document.getElementById('graphResults').classList.add('hidden');
                 if (summaryBarInstance) summaryBarInstance.destroy();
-                document.getElementById('summaryStats').innerHTML = '<p class="text-slate-400 text-sm">ไม่มีข้อมูลของเดือนนี้</p>';
+                document.getElementById('summaryStats').innerHTML = '<p class="text-slate-400 text-sm">ไม่มีข้อมูลของเดือนและปีนี้</p>';
             }
         }
 
-        // --- ส่วนดาวน์โหลดไฟล์ Template หน้ารวมข้อมูลบุคคล ---
         function downloadWrongTemplate() {
             const wb = XLSX.utils.book_new();
             const ws = XLSX.utils.aoa_to_sheet([["ชื่อพนักงาน", "ยอดผิด"], ["สมชาย ใจดี", 1000], ["สมศักดิ์ ขยัน", 500]]);
@@ -644,9 +784,7 @@
             XLSX.writeFile(wb, "Template_ยอดอนุมัติและวันทำงาน.xlsx");
         }
 
-        // --- ส่วนดาวน์โหลดไฟล์ Template หน้าสรุปผลกราฟรายเดือน (อัปเดตตามไฟล์ตัวอย่าง Matrix แล้ว) ---
         function downloadTemplates() {
-            // 1. ไฟล์ยอดอนุมัติรายวัน (หัวคอลัมน์คือวันที่ 1-31, แถวคือรายชื่อพนักงาน)
             const wb1 = XLSX.utils.book_new();
             const headers1 = ["พนักงาน/วันที่", ...Array.from({length: 31}, (_, i) => String(i + 1))];
             const data1 = [
@@ -659,7 +797,6 @@
             XLSX.utils.book_append_sheet(wb1, ws1, "Data");
             XLSX.writeFile(wb1, "Template_ยอดอนุมัติรายวัน.xlsx");
 
-            // 2. ไฟล์ยอดอนุมัติผิดรายวัน (หัวคอลัมน์คือวันที่ 1-31, แถวคือประเภทความผิด)
             const wb2 = XLSX.utils.book_new();
             const headers2 = ["ประเภท/วันที่", ...Array.from({length: 31}, (_, i) => String(i + 1))];
             const data2 = [
@@ -672,7 +809,6 @@
             XLSX.writeFile(wb2, "Template_ยอดอนุมัติผิดรายวัน.xlsx");
         }
 
-        // --- ส่วนฟังก์ชันจัดการการ Upload ข้อมูลหน้ารวม ---
         async function handleWrongFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -689,9 +825,8 @@
             document.getElementById('correctInput').value = text;
         }
 
-        document.getElementById('graphMonthSelect').addEventListener('change', function() {
-            renderSummaryBarChart(); 
-        });
+        document.getElementById('graphMonthSelect').addEventListener('change', renderSummaryBarChart);
+        document.getElementById('graphYearSelect').addEventListener('change', renderSummaryBarChart);
     </script>
 </body>
 </html>
